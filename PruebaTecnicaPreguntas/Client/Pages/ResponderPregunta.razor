@@ -1,0 +1,141 @@
+﻿@page "/responder/{IdPregunta:int}"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+
+@using PruebaTecnicaPreguntas.Shared
+
+<div class="shadow p-3">
+
+
+    <div class="shadow-3-strong rounded offset-6 p-2">
+        <EditForm class="animation fade-in" Model="respuesta" OnValidSubmit="async ()=> await GuardarRespuesta()">
+            <div class="form-floating m-3">
+                <InputText @bind-Value="respuesta.Respuesta" placeholder="Responder" class="form-control" id="respuesta" />
+                <label class="text-muted" for="respuesta">Responder</label>
+                <ValidationMessage For="()=>respuesta.Respuesta"/>
+            </div>
+
+            <div class="text-end">
+                <button @onclick="()=>Regresar()" class="btn btn-light">
+                    <span class="oi oi-circle-x"></span>
+                    Regresar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <span class="oi oi-check"></span>
+                    Responder
+                </button>
+            </div>
+            <DataAnnotationsValidator/>
+        </EditForm>
+    </div>
+
+    @if (pregunta != null)
+    {
+        <p class="fw-bolder border-bottom rounded-5 display-6 mt-4">
+            @pregunta.Pregunta
+        </p>
+    }
+
+    @if (respuestas == null)
+    {
+
+
+        <p class="text-muted">Cargando...</p>
+    }
+    else
+    {
+        <ol class="list-group list-group-numbered offset-sm-3">
+
+            @foreach (var respuesta in respuestas)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">@respuesta.Respuesta</div>
+                        <small class="text-muted">
+                            @respuesta.NombreUsuario
+                        </small>
+                    </div>
+                    <span class="badge bg-light rounded-pill">
+                        <button class="btn btn-link" @onclick="async()=> await DarLike(respuesta.Id)">
+                            <span class="badge badge-secondary">@respuesta.Likes</span>
+                            <span class="oi oi-thumb-up"></span>
+                        </button>
+                    </span>
+                </li>
+            }
+
+
+        </ol>
+
+
+    }
+</div>
+
+@code {
+
+    List<Respuestas> respuestas;
+    private Preguntas pregunta;
+    private Respuestas respuesta = new();
+
+    protected async Task GuardarRespuesta()
+    {
+
+        respuesta.IdUsuario = 1;
+        respuesta.IdPregunta = pregunta.Id;
+        await http.PostAsJsonAsync("api/Respuestas", respuesta);
+
+        respuesta = new();
+
+        await ObtenerRespuestas();
+
+    }
+
+
+
+    protected void Regresar()
+    {
+        navigation.NavigateTo("/VerPreguntas/");
+    }
+
+
+
+    protected async Task ObtenerRespuestas()
+    {
+        respuestas = null;
+        respuestas = await http.GetFromJsonAsync<List<Respuestas>>($"api/Respuestas/verRespuestas/{IdPregunta}");
+    }
+
+
+
+
+    protected async Task ObtenerPregunta(int id)
+    {
+        pregunta = await http.GetFromJsonAsync<Preguntas>($"api/Preguntas/{id}");
+    }
+
+
+
+
+    protected async Task DarLike(int idRespuesta)
+    {
+        int like = await http.GetFromJsonAsync<int>($"api/Respuestas/Like/{idRespuesta}");
+        await ObtenerRespuestas();
+    }
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerRespuestas();
+        await ObtenerPregunta(IdPregunta);
+    }
+
+    [Parameter]
+    public int IdPregunta { get; set; }
+
+
+
+}
+

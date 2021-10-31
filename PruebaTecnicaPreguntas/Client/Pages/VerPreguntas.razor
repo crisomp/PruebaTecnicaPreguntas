@@ -1,0 +1,134 @@
+﻿@page "/VerPreguntas"
+
+@using PruebaTecnicaPreguntas.Shared
+
+@inject HttpClient httpClient
+
+@inject NavigationManager navigation
+
+
+
+<button @onclick="CrearPregunta" class="btn btn-warning float-end">
+    <span class="oi oi-plus"></span>
+    Crear Pregunta
+</button>
+
+@if (crearPregunta)
+{
+<div class="border rounded p-5 m-5">
+    <EditForm class="animation fade-in" Model="pregunta" OnValidSubmit="@(async ()=> await AgregarPregunta())">
+        <div class="form-floating m-3">
+            <InputText placeholder="Escribe Tu Pregunta" class="form-control" @bind-Value="pregunta.Pregunta" id="pregunta" />
+            <label class="text-muted" for="pregunta">Escribe Tu Pregunta</label>
+            <ValidationMessage For="()=>pregunta.Pregunta" />
+        </div>
+
+        <div class="text-end">
+            <button @onclick="CrearPregunta" class="btn btn-light">
+                <span class="oi oi-circle-x"></span>
+                Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <span class="oi oi-check"></span>
+                Crear
+            </button>
+        </div>
+        <DataAnnotationsValidator/>
+    </EditForm>
+</div>
+}
+
+
+@if (preguntas == null)
+{
+
+
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+}
+else
+{
+
+    @foreach (var pregunta in preguntas)
+    {
+<div class="shadow p-2 m-5 rounded animation fade-in">
+    <p class="text-end">
+        <button @onclick="()=>Responder(pregunta.Id)" class="btn btn-link">Responder</button>
+    </p>
+    <small class="text-muted text-monospace">@pregunta.NombreUsuario DICE:  </small>
+    <p class="pl-3 font-weight-bold border-bottom">@pregunta.Pregunta</p>
+    <div>
+
+
+
+
+        <ObtenerRespuestasPopulares IdPregunta="@pregunta.Id" />
+        
+
+        <div class="border-top rounded-7 mt-3 p-3">
+            <small class="badge badge-info">@pregunta.NombreEstado</small>
+            <button @onclick="()=>Responder(pregunta.Id)" class="btn btn-link float-end m-1">
+                Ver Mas... <span class="badge badge-warning"></span>
+            </button>
+        </div>
+
+    </div>
+</div>
+    }
+}
+
+
+@code {
+    bool crearPregunta = false;
+
+    List<Preguntas> preguntas;
+    Preguntas pregunta;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerPreguntas();
+    }
+
+    protected async Task ObtenerPreguntas()
+    {
+        preguntas = await httpClient.GetFromJsonAsync<List<Preguntas>>("api/Preguntas");
+    }
+
+    protected void CrearPregunta()
+    {
+        if (crearPregunta)
+        {
+            crearPregunta = false;
+            pregunta = null;
+        }
+        else
+        {
+            crearPregunta = true;
+            pregunta = new();
+        }
+    }
+
+    protected async Task AgregarPregunta()
+    {
+        preguntas = null;
+
+        pregunta.IdUsuario = 1;
+
+        await httpClient.PostAsJsonAsync("api/Preguntas", pregunta);
+        CrearPregunta();
+
+        await ObtenerPreguntas();
+    }
+
+    protected void Responder(int idPregunta)
+    {
+        navigation.NavigateTo($"/responder/{idPregunta}");
+
+    }
+
+    
+}

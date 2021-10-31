@@ -1,0 +1,64 @@
+﻿@using PruebaTecnicaPreguntas.Shared
+@inject HttpClient http
+
+        
+
+@if (respuestas == null)
+{
+
+
+<p class="text-muted">Cargando...</p>
+}
+else
+{
+<ol class="list-group list-group-numbered offset-2">
+
+    @foreach (var respuesta in respuestas)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="ms-2 me-auto">
+                <div class="fw-bold">@respuesta.Respuesta</div>
+                <small class="text-muted">
+                    @respuesta.NombreUsuario
+                </small>
+            </div>
+            <span class="badge bg-light rounded-pill">
+                <button class="btn btn-link" @onclick="async()=> await DarLike(respuesta.Id)">
+                    <span class="badge badge-secondary">@respuesta.Likes</span>
+                    <span class="oi oi-thumb-up"></span>
+                </button>
+            </span>
+        </li>
+    }
+
+
+</ol>
+}
+
+
+@code {
+    List<Respuestas> respuestas;
+
+    protected async Task Populares()
+    {
+        respuestas = await http.GetFromJsonAsync<List<Respuestas>>($"api/Respuestas/populares/{IdPregunta}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Populares();
+    }
+
+    protected async Task DarLike(int idRespuesta)
+    {
+        int like = await http.GetFromJsonAsync<int>($"api/Respuestas/Like/{idRespuesta}");
+        await Populares();
+    }
+
+
+    [Parameter]
+    public int IdPregunta { get; set; }
+
+
+
+}
