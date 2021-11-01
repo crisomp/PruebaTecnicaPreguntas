@@ -36,12 +36,14 @@ namespace PruebaTecnicaPreguntas.Server.Controllers
             return await Servicio.BuscarPreguntaPorId(id);
         }
 
+
         // POST api/<PreguntasController>
         [HttpPost]
         public async Task<Preguntas> Post([FromBody] Preguntas pregunta)
         {
             return await Servicio.AgregarPregunta(pregunta);
         }
+
 
         // PUT api/<PreguntasController>/5
         [HttpPut("{id}")]

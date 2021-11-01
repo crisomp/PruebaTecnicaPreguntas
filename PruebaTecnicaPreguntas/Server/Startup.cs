@@ -34,6 +34,7 @@ namespace PruebaTecnicaPreguntas.Server
 
             services.AddScoped<IPregunta, PreguntaServicio>();
             services.AddScoped<IRespuesta, RespuestaServicio>();
+            services.AddScoped<IUsuario, UsuarioServicio>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

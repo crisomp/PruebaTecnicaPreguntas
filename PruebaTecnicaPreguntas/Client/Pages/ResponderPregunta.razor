@@ -1,13 +1,16 @@
 ﻿@page "/responder/{IdPregunta:int}"
+
 @inject HttpClient http
 @inject NavigationManager navigation
 
 
 @using PruebaTecnicaPreguntas.Shared
 
+
+
 <div class="shadow p-3">
 
-
+    @* Formulario para respuesta *@
     <div class="shadow-3-strong rounded offset-6 p-2">
         <EditForm class="animation fade-in" Model="respuesta" OnValidSubmit="async ()=> await GuardarRespuesta()">
             <div class="form-floating m-3">
@@ -30,6 +33,9 @@
         </EditForm>
     </div>
 
+
+
+    @* Pregunta *@
     @if (pregunta != null)
     {
         <p class="fw-bolder border-bottom rounded-5 display-6 mt-4">
@@ -45,6 +51,7 @@
     }
     else
     {
+        //Iteracion de Respuestas
         <ol class="list-group list-group-numbered offset-sm-3">
 
             @foreach (var respuesta in respuestas)
@@ -131,6 +138,8 @@
         await ObtenerRespuestas();
         await ObtenerPregunta(IdPregunta);
     }
+
+
 
     [Parameter]
     public int IdPregunta { get; set; }
